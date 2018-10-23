@@ -3,7 +3,7 @@
 #include <cstddef>
 #include "../call_for_range.hpp"
 
-#include <iostream>
+#include <limits>
 
 namespace Bitonic {
 
