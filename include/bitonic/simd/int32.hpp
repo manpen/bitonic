@@ -43,6 +43,24 @@ struct Int32Base {
         }
     }
 
+    template<typename value_type>
+    static simd_type partial_load(const simd_type *begin, const size_t length, const value_type empty_value) {
+        const simd_type index = _mm256_setr_epi32(0,1,2,3,4,5,6,7);
+        const simd_type len = _mm256_set1_epi32(length);
+        auto mask = _mm256_cmpgt_epi32(len, index); // gives 1 where to load
+        auto value = _mm256_maskload_epi32(reinterpret_cast<const int*>(begin), mask);
+
+        if (empty_value) {
+            auto tmp = _mm256_set1_epi32(-1);
+            mask = _mm256_xor_si256(mask, tmp);
+            auto empty = _mm256_and_si256(mask, _mm256_set1_epi32(empty_value));
+            value = _mm256_or_si256(value, empty);
+        }
+
+        return value;
+    };
+
+
     template<bool kAligned>
     static void store(simd_type *it, const simd_type x) {
         if constexpr (kAligned) {
@@ -51,6 +69,13 @@ struct Int32Base {
             _mm256_storeu_si256(it, x);
         }
     }
+
+    static void partial_store(simd_type *begin, const size_t length, const simd_type x) {
+        const simd_type index = _mm256_setr_epi32(0,1,2,3,4,5,6,7);
+        const simd_type len = _mm256_set1_epi32(length);
+        auto mask = _mm256_cmpgt_epi32(len, index); // gives 1 where to load
+        _mm256_maskstore_epi32(reinterpret_cast<int*>(begin), mask, x);
+    };
 
     static void print(const simd_type x, std::ostream& os = std::cout) {
         os << _mm256_extract_epi32(x, 0) << " "

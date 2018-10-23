@@ -19,52 +19,67 @@ public:
         const size_t regs = ((end - begin) + SimdOps::kPacking  - 1) / SimdOps::kPacking;
 
         switch(regs) {
-            case  1: load_sort_store< 1, kAligned>(begin); return;
-            case  2: load_sort_store< 2, kAligned>(begin); return;
-            case  3: load_sort_store< 3, kAligned>(begin); return;
-            case  4: load_sort_store< 4, kAligned>(begin); return;
-            case  5: load_sort_store< 5, kAligned>(begin); return;
-            case  6: load_sort_store< 6, kAligned>(begin); return;
-            case  7: load_sort_store< 7, kAligned>(begin); return;
-            case  8: load_sort_store< 8, kAligned>(begin); return;
-            case  9: load_sort_store< 9, kAligned>(begin); return;
+            case  1: load_sort_store< 1, kAligned>(begin, end); return;
+            case  2: load_sort_store< 2, kAligned>(begin, end); return;
+            case  3: load_sort_store< 3, kAligned>(begin, end); return;
+            case  4: load_sort_store< 4, kAligned>(begin, end); return;
+            case  5: load_sort_store< 5, kAligned>(begin, end); return;
+            case  6: load_sort_store< 6, kAligned>(begin, end); return;
+            case  7: load_sort_store< 7, kAligned>(begin, end); return;
+            case  8: load_sort_store< 8, kAligned>(begin, end); return;
+            case  9: load_sort_store< 9, kAligned>(begin, end); return;
 
-            case 10: load_sort_store<10, kAligned>(begin); return;
-            case 11: load_sort_store<11, kAligned>(begin); return;
-            case 12: load_sort_store<12, kAligned>(begin); return;
-            case 13: load_sort_store<13, kAligned>(begin); return;
-            case 14: load_sort_store<14, kAligned>(begin); return;
-            case 15: load_sort_store<15, kAligned>(begin); return;
-            case 16: load_sort_store<16, kAligned>(begin); return;
-            case 17: load_sort_store<17, kAligned>(begin); return;
-            case 18: load_sort_store<18, kAligned>(begin); return;
-            case 19: load_sort_store<19, kAligned>(begin); return;
+            case 10: load_sort_store<10, kAligned>(begin, end); return;
+            case 11: load_sort_store<11, kAligned>(begin, end); return;
+            case 12: load_sort_store<12, kAligned>(begin, end); return;
+            case 13: load_sort_store<13, kAligned>(begin, end); return;
+            case 14: load_sort_store<14, kAligned>(begin, end); return;
+            case 15: load_sort_store<15, kAligned>(begin, end); return;
+            case 16: load_sort_store<16, kAligned>(begin, end); return;
+            case 17: load_sort_store<17, kAligned>(begin, end); return;
+            case 18: load_sort_store<18, kAligned>(begin, end); return;
+            case 19: load_sort_store<19, kAligned>(begin, end); return;
 
-            case 20: load_sort_store<20, kAligned>(begin); return;
-            case 21: load_sort_store<21, kAligned>(begin); return;
-            case 22: load_sort_store<22, kAligned>(begin); return;
-            case 23: load_sort_store<23, kAligned>(begin); return;
-            case 24: load_sort_store<24, kAligned>(begin); return;
-            case 25: load_sort_store<25, kAligned>(begin); return;
-            case 26: load_sort_store<26, kAligned>(begin); return;
-            case 27: load_sort_store<27, kAligned>(begin); return;
-            case 28: load_sort_store<28, kAligned>(begin); return;
-            case 29: load_sort_store<29, kAligned>(begin); return;
+            case 20: load_sort_store<20, kAligned>(begin, end); return;
+            case 21: load_sort_store<21, kAligned>(begin, end); return;
+            case 22: load_sort_store<22, kAligned>(begin, end); return;
+            case 23: load_sort_store<23, kAligned>(begin, end); return;
+            case 24: load_sort_store<24, kAligned>(begin, end); return;
+            case 25: load_sort_store<25, kAligned>(begin, end); return;
+            case 26: load_sort_store<26, kAligned>(begin, end); return;
+            case 27: load_sort_store<27, kAligned>(begin, end); return;
+            case 28: load_sort_store<28, kAligned>(begin, end); return;
+            case 29: load_sort_store<29, kAligned>(begin, end); return;
 
-            case 30: load_sort_store<30, kAligned>(begin); return;
-            case 31: load_sort_store<31, kAligned>(begin); return;
-            case 32: load_sort_store<32, kAligned>(begin); return;
+            case 30: load_sort_store<30, kAligned>(begin, end); return;
+            case 31: load_sort_store<31, kAligned>(begin, end); return;
+            case 32: load_sort_store<32, kAligned>(begin, end); return;
         }
     }
 
     template <size_t k, bool kAligned>
-    static void load_sort_store(value_type* it) {
-        auto packed_it = reinterpret_cast<simd_type*>(it);
+    static void load_sort_store(value_type* begin, value_type* end) {
+        auto packed_it = reinterpret_cast<simd_type*>(begin);
+        const auto partial_size = (end - begin) % SimdOps::kPacking;
 
         simd_type registers[k];
-        load<k, kAligned>(packed_it, registers);
+
+        if ( !partial_size ) {
+            load<k, kAligned>(packed_it, registers);
+        } else {
+            registers[k-1] = SimdOps::partial_load(packed_it + (k-1), partial_size,
+                                                   std::numeric_limits<value_type>::max());
+            load<k-1, kAligned>(packed_it, registers);
+        }
+
         Sorter<k, true>::sort(registers);
-        store<k, kAligned>(packed_it, registers);
+
+        if ( !partial_size ) {
+            store<k, kAligned>(packed_it, registers);
+        } else {
+            store<k-1, kAligned>(packed_it, registers);
+            SimdOps::partial_store(packed_it + (k-1), partial_size, registers[k-1]);
+        }
     }
 
 private:
