@@ -14,50 +14,50 @@ class SimdSort {
     using simd_type  = typename SimdOps::simd_type;
 
 public:
-    template <bool kAligned = false>
+    template <bool kAligned = false, bool kStream = false>
     static void sort(value_type* begin, value_type* end) {
         const size_t regs = ((end - begin) + SimdOps::kPacking  - 1) / SimdOps::kPacking;
 
         switch(regs) {
-            case  1: load_sort_store< 1, kAligned>(begin, end); return;
-            case  2: load_sort_store< 2, kAligned>(begin, end); return;
-            case  3: load_sort_store< 3, kAligned>(begin, end); return;
-            case  4: load_sort_store< 4, kAligned>(begin, end); return;
-            case  5: load_sort_store< 5, kAligned>(begin, end); return;
-            case  6: load_sort_store< 6, kAligned>(begin, end); return;
-            case  7: load_sort_store< 7, kAligned>(begin, end); return;
-            case  8: load_sort_store< 8, kAligned>(begin, end); return;
-            case  9: load_sort_store< 9, kAligned>(begin, end); return;
+            case  1: load_sort_store< 1, kAligned, kStream>(begin, end); return;
+            case  2: load_sort_store< 2, kAligned, kStream>(begin, end); return;
+            case  3: load_sort_store< 3, kAligned, kStream>(begin, end); return;
+            case  4: load_sort_store< 4, kAligned, kStream>(begin, end); return;
+            case  5: load_sort_store< 5, kAligned, kStream>(begin, end); return;
+            case  6: load_sort_store< 6, kAligned, kStream>(begin, end); return;
+            case  7: load_sort_store< 7, kAligned, kStream>(begin, end); return;
+            case  8: load_sort_store< 8, kAligned, kStream>(begin, end); return;
+            case  9: load_sort_store< 9, kAligned, kStream>(begin, end); return;
 
-            case 10: load_sort_store<10, kAligned>(begin, end); return;
-            case 11: load_sort_store<11, kAligned>(begin, end); return;
-            case 12: load_sort_store<12, kAligned>(begin, end); return;
-            case 13: load_sort_store<13, kAligned>(begin, end); return;
-            case 14: load_sort_store<14, kAligned>(begin, end); return;
-            case 15: load_sort_store<15, kAligned>(begin, end); return;
-            case 16: load_sort_store<16, kAligned>(begin, end); return;
-            case 17: load_sort_store<17, kAligned>(begin, end); return;
-            case 18: load_sort_store<18, kAligned>(begin, end); return;
-            case 19: load_sort_store<19, kAligned>(begin, end); return;
+            case 10: load_sort_store<10, kAligned, kStream>(begin, end); return;
+            case 11: load_sort_store<11, kAligned, kStream>(begin, end); return;
+            case 12: load_sort_store<12, kAligned, kStream>(begin, end); return;
+            case 13: load_sort_store<13, kAligned, kStream>(begin, end); return;
+            case 14: load_sort_store<14, kAligned, kStream>(begin, end); return;
+            case 15: load_sort_store<15, kAligned, kStream>(begin, end); return;
+            case 16: load_sort_store<16, kAligned, kStream>(begin, end); return;
+            case 17: load_sort_store<17, kAligned, kStream>(begin, end); return;
+            case 18: load_sort_store<18, kAligned, kStream>(begin, end); return;
+            case 19: load_sort_store<19, kAligned, kStream>(begin, end); return;
 
-            case 20: load_sort_store<20, kAligned>(begin, end); return;
-            case 21: load_sort_store<21, kAligned>(begin, end); return;
-            case 22: load_sort_store<22, kAligned>(begin, end); return;
-            case 23: load_sort_store<23, kAligned>(begin, end); return;
-            case 24: load_sort_store<24, kAligned>(begin, end); return;
-            case 25: load_sort_store<25, kAligned>(begin, end); return;
-            case 26: load_sort_store<26, kAligned>(begin, end); return;
-            case 27: load_sort_store<27, kAligned>(begin, end); return;
-            case 28: load_sort_store<28, kAligned>(begin, end); return;
-            case 29: load_sort_store<29, kAligned>(begin, end); return;
+            case 20: load_sort_store<20, kAligned, kStream>(begin, end); return;
+            case 21: load_sort_store<21, kAligned, kStream>(begin, end); return;
+            case 22: load_sort_store<22, kAligned, kStream>(begin, end); return;
+            case 23: load_sort_store<23, kAligned, kStream>(begin, end); return;
+            case 24: load_sort_store<24, kAligned, kStream>(begin, end); return;
+            case 25: load_sort_store<25, kAligned, kStream>(begin, end); return;
+            case 26: load_sort_store<26, kAligned, kStream>(begin, end); return;
+            case 27: load_sort_store<27, kAligned, kStream>(begin, end); return;
+            case 28: load_sort_store<28, kAligned, kStream>(begin, end); return;
+            case 29: load_sort_store<29, kAligned, kStream>(begin, end); return;
 
-            case 30: load_sort_store<30, kAligned>(begin, end); return;
-            case 31: load_sort_store<31, kAligned>(begin, end); return;
-            case 32: load_sort_store<32, kAligned>(begin, end); return;
+            case 30: load_sort_store<30, kAligned, kStream>(begin, end); return;
+            case 31: load_sort_store<31, kAligned, kStream>(begin, end); return;
+            case 32: load_sort_store<32, kAligned, kStream>(begin, end); return;
         }
     }
 
-    template <size_t k, bool kAligned>
+    template <size_t k, bool kAligned, bool kStream>
     static void load_sort_store(value_type* begin, value_type* end) {
         auto packed_it = reinterpret_cast<simd_type*>(begin);
         const auto partial_size = (end - begin) % SimdOps::kPacking;
@@ -65,35 +65,35 @@ public:
         simd_type registers[k];
 
         if ( !partial_size ) {
-            load<k, kAligned>(packed_it, registers);
+            load<k, kAligned, kStream>(packed_it, registers);
         } else {
             registers[k-1] = SimdOps::partial_load(packed_it + (k-1), partial_size,
                                                    std::numeric_limits<value_type>::max());
-            load<k-1, kAligned>(packed_it, registers);
+            load<k-1, kAligned, kStream>(packed_it, registers);
         }
 
         Sorter<k, true>::sort(registers);
 
         if ( !partial_size ) {
-            store<k, kAligned>(packed_it, registers);
+            store<k, kAligned, kStream>(packed_it, registers);
         } else {
-            store<k-1, kAligned>(packed_it, registers);
+            store<k-1, kAligned, kStream>(packed_it, registers);
             SimdOps::partial_store(packed_it + (k-1), partial_size, registers[k-1]);
         }
     }
 
 private:
-    template <size_t kSize, bool kAligned>
+    template <size_t kSize, bool kAligned, bool kStream>
     static void load(const simd_type* it, simd_type* x) {
         tlx::call_for_range<0, kSize>([&] (size_t idx) {
-            x[idx] = SimdOps::template load<kAligned>(it + idx);
+            x[idx] = SimdOps::template load<kAligned, kStream>(it + idx);
         });
     }
 
-    template <size_t kSize, bool kAligned>
+    template <size_t kSize, bool kAligned, bool kStream>
     static void store(simd_type* it, simd_type* x) {
         tlx::call_for_range<0, kSize>([&] (size_t idx) {
-            SimdOps::template store<kAligned>(it + idx, x[idx]);
+            SimdOps::template store<kAligned, kStream>(it + idx, x[idx]);
         });
     }
 

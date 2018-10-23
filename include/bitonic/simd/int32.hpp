@@ -34,12 +34,18 @@ struct Int32Base {
         return _mm256_blend_epi32(a, b, N);
     }
 
-    template<bool kAligned>
+    template<bool kAligned, bool kStream>
     static simd_type load(const simd_type *it) {
-        if constexpr (kAligned) {
-            return _mm256_load_si256(it);
+        static_assert(!(kStream && !kAligned), "Streaming stores require aligned access");
+
+        if constexpr (kStream) {
+            return _mm256_stream_load_si256(it);
         } else {
-            return _mm256_loadu_si256(it);
+            if constexpr (kAligned) {
+                return _mm256_load_si256(it);
+            } else {
+                return _mm256_loadu_si256(it);
+            }
         }
     }
 
@@ -61,12 +67,18 @@ struct Int32Base {
     };
 
 
-    template<bool kAligned>
+    template<bool kAligned, bool kStream>
     static void store(simd_type *it, const simd_type x) {
-        if constexpr (kAligned) {
-            _mm256_store_si256(it, x);
+        static_assert(!(kStream && !kAligned), "Streaming stores require aligned access");
+
+        if constexpr (kStream) {
+            _mm256_stream_si256(it, x);
         } else {
-            _mm256_storeu_si256(it, x);
+            if constexpr (kAligned) {
+                _mm256_store_si256(it, x);
+            } else {
+                _mm256_storeu_si256(it, x);
+            }
         }
     }
 
@@ -85,7 +97,7 @@ struct Int32Base {
            << _mm256_extract_epi32(x, 4) << " "
            << _mm256_extract_epi32(x, 5) << " "
            << _mm256_extract_epi32(x, 6) << " "
-           << _mm256_extract_epi32(x, 7) << " ";
+           << _mm256_extract_epi32(x, 7);
     }
 };
 
