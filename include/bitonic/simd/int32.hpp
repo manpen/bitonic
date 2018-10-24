@@ -1,11 +1,13 @@
 #pragma once
 
+#include "simd_adapter.hpp"
+
 #include <immintrin.h>
 
 #include <cstddef>
 #include <cstdint>
 
-#include <ostream>
+#include <iostream>
 #include <string>
 
 namespace Bitonic {
@@ -128,6 +130,12 @@ struct UnsignedInt32 : public Int32Base {
 
     static std::string name() {return "UnsignedInt32";}
 };
+
+template <>
+struct Select<int32_t> {using type = SignedInt32;};
+
+template <>
+struct Select<uint32_t> {using type = UnsignedInt32;};
 
 }
 }

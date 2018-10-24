@@ -106,11 +106,14 @@ void test_random_elements(size_t N) {
     }
 }
 
-template <typename SimdOps>
+template <typename T>
 void test_all_by_type() {
+    using SimdOps = typename Bitonic::SimdAdapter::Select<T>::type;
+
     for(size_t N : {4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
                     24, 32, 40, 48, 56, 64, 120, 128, 192, 256}) {
         if (N < SimdOps::kPacking) continue;
+        if (N / SimdOps::kPacking > 32) continue;
 
         test_sorted_1toN<SimdOps>(N);
         test_sorted_1toNHalf<SimdOps>(N);
@@ -125,8 +128,8 @@ void test_all_by_type() {
 }
 
 int main() {
-    test_all_by_type<Bitonic::SimdAdapter::SignedInt32>();
-    test_all_by_type<Bitonic::SimdAdapter::UnsignedInt32>();
+    test_all_by_type<int32_t>();
+    test_all_by_type<uint32_t>();
 
     return 0;
 }
