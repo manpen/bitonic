@@ -104,54 +104,101 @@ private:
     // base case for one packed register
     template <bool kAscending>
     struct Sorter<1, kAscending> {
+// Packing: 4
         static void merge(simd_type* vs) {
-            auto& v = vs[0];
+            auto &v = vs[0];
             constexpr int kSwitch = kAscending ? 0 : 0xff;
 
-            {
-                auto tmp = SimdOps::swap_low_high(v);
-                auto mi = SimdOps::min(v, tmp);
-                auto ma = SimdOps::max(v, tmp);
-                v = SimdOps::template blend<0xf0 ^ kSwitch>(mi, ma);
-            }
+            if constexpr (SimdOps::kPacking == 4) {
+                {
+                    auto tmp = SimdOps::swap_low_high(v);
+                    auto mi = SimdOps::min(v, tmp);
+                    auto ma = SimdOps::max(v, tmp);
+                    v = SimdOps::template blend<0xf0 ^ kSwitch>(mi, ma);
+                }
 
-            {
-                auto tmp = SimdOps::template shuffle<1, 0, 3, 2>(v);
-                auto mi = SimdOps::min(v, tmp);
-                auto ma = SimdOps::max(v, tmp);
-                v = SimdOps::template blend<0xcc ^ kSwitch>(mi, ma);
-            }
+                {
+                    auto tmp = SimdOps::template shuffle<1, 0>(v);
+                    auto mi = SimdOps::min(v, tmp);
+                    auto ma = SimdOps::max(v, tmp);
+                    v = SimdOps::template blend<0x11 ^ kSwitch>(mi, ma);
+                }
+            } else if constexpr (SimdOps::kPacking == 8) {
+                {
+                    auto tmp = SimdOps::swap_low_high(v);
+                    auto mi = SimdOps::min(v, tmp);
+                    auto ma = SimdOps::max(v, tmp);
+                    v = SimdOps::template blend<0xf0 ^ kSwitch>(mi, ma);
+                }
 
-            {
-                auto tmp = SimdOps::template shuffle<2, 3, 0, 1>(v);
-                auto mi = SimdOps::min(v, tmp);
-                auto ma = SimdOps::max(v, tmp);
-                v = SimdOps::template blend<0xaa ^ kSwitch>(mi, ma);
-            }
+                {
+                    auto tmp = SimdOps::template shuffle<1, 0, 3, 2>(v);
+                    auto mi = SimdOps::min(v, tmp);
+                    auto ma = SimdOps::max(v, tmp);
+                    v = SimdOps::template blend<0xcc ^ kSwitch>(mi, ma);
+                }
 
+                {
+                    auto tmp = SimdOps::template shuffle<2, 3, 0, 1>(v);
+                    auto mi = SimdOps::min(v, tmp);
+                    auto ma = SimdOps::max(v, tmp);
+                    v = SimdOps::template blend<0xaa ^ kSwitch>(mi, ma);
+                }
+            } else if constexpr (SimdOps::kPacking == 16) {
+                {
+                    auto tmp = SimdOps::swap_low_high(v);
+                    auto mi = SimdOps::min(v, tmp);
+                    auto ma = SimdOps::max(v, tmp);
+                    v = SimdOps::template blend<0xf0 ^ kSwitch>(mi, ma);
+                }
+
+                {
+                    auto tmp = SimdOps::template shuffle<1, 0, 3, 2>(v);
+                    auto mi = SimdOps::min(v, tmp);
+                    auto ma = SimdOps::max(v, tmp);
+                    v = SimdOps::template blend<0xcc ^ kSwitch>(mi, ma);
+                }
+
+                {
+                    auto tmp = SimdOps::template shuffle<2, 3, 0, 1>(v);
+                    auto mi = SimdOps::min(v, tmp);
+                    auto ma = SimdOps::max(v, tmp);
+                    v = SimdOps::template blend<0xaa ^ kSwitch>(mi, ma);
+                }
+            }
         }
 
         static void sort(simd_type* vs) {
             auto& v = vs[0];
-            {
-                auto tmp = SimdOps::template shuffle<2, 3, 0, 1>(v);
-                auto mi = SimdOps::min(v, tmp);
-                auto ma = SimdOps::max(v, tmp);
-                v = SimdOps::template blend<0x66>(mi, ma);
-            }
 
-            {
-                auto tmp = SimdOps::template shuffle<1, 0, 3, 2>(v);
-                auto mi = SimdOps::min(v, tmp);
-                auto ma = SimdOps::max(v, tmp);
-                v = SimdOps::template blend<0x3c>(mi, ma);
-            }
+            if constexpr (SimdOps::kPacking == 4) {
+                {
+                    auto tmp = SimdOps::template shuffle<0, 1>(v);
+                    auto mi = SimdOps::min(v, tmp);
+                    auto ma = SimdOps::max(v, tmp);
+                    v = SimdOps::template blend<0x12>(mi, ma);
+                }
+            } else if constexpr (SimdOps::kPacking == 8) {
+                {
+                    auto tmp = SimdOps::template shuffle<2, 3, 0, 1>(v);
+                    auto mi = SimdOps::min(v, tmp);
+                    auto ma = SimdOps::max(v, tmp);
+                    v = SimdOps::template blend<0x66>(mi, ma);
+                }
 
-            {
-                auto tmp = SimdOps::template shuffle<2, 3, 0, 1>(v);
-                auto mi = SimdOps::min(v, tmp);
-                auto ma = SimdOps::max(v, tmp);
-                v = SimdOps::template blend<0x5a>(mi, ma);
+                {
+                    auto tmp = SimdOps::template shuffle<1, 0, 3, 2>(v);
+                    auto mi = SimdOps::min(v, tmp);
+                    auto ma = SimdOps::max(v, tmp);
+                    v = SimdOps::template blend<0x3c>(mi, ma);
+                }
+
+                {
+                    auto tmp = SimdOps::template shuffle<2, 3, 0, 1>(v);
+                    auto mi = SimdOps::min(v, tmp);
+                    auto ma = SimdOps::max(v, tmp);
+                    v = SimdOps::template blend<0x5a>(mi, ma);
+                }
             }
 
             merge(vs);

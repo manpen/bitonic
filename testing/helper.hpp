@@ -24,3 +24,17 @@ inline void die_unless_equal(T1&& a, T2&& b, const Ts&... xs) {
         die_unless(false, xs...);
     }
 }
+
+template <class T>
+static T* align_pointer(T* ptr, std::size_t alignment) {
+    uintptr_t v = reinterpret_cast<std::uintptr_t>(ptr);
+    v = (v - 1 + alignment) & ~(alignment - 1);
+    return reinterpret_cast<T*>(v);
+}
+
+template <class T>
+static bool is_aligned(T* ptr, std::size_t alignment) {
+    uintptr_t v = reinterpret_cast<std::uintptr_t>(ptr);
+    return 0 == (v % alignment);
+}
+

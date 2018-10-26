@@ -8,6 +8,7 @@
 #include <cstdint>
 
 #include <iostream>
+#include <sstream>
 #include <string>
 
 namespace Bitonic {
@@ -61,7 +62,8 @@ struct Int32Base {
         if (empty_value) {
             auto tmp = _mm256_set1_epi32(-1);
             mask = _mm256_xor_si256(mask, tmp);
-            auto empty = _mm256_and_si256(mask, _mm256_set1_epi32(empty_value));
+            auto empty = _mm256_set1_epi32(empty_value);
+            empty = _mm256_and_si256(mask, empty);
             value = _mm256_or_si256(value, empty);
         }
 
@@ -92,7 +94,9 @@ struct Int32Base {
     };
 
     static void print(const simd_type x, std::ostream& os = std::cout) {
-        os << _mm256_extract_epi32(x, 0) << " "
+        std::stringstream ss;
+
+        ss << _mm256_extract_epi32(x, 0) << " "
            << _mm256_extract_epi32(x, 1) << " "
            << _mm256_extract_epi32(x, 2) << " "
            << _mm256_extract_epi32(x, 3) << " "
@@ -100,6 +104,8 @@ struct Int32Base {
            << _mm256_extract_epi32(x, 5) << " "
            << _mm256_extract_epi32(x, 6) << " "
            << _mm256_extract_epi32(x, 7);
+
+        os << ss.str();
     }
 };
 
